@@ -11,9 +11,10 @@ import subprocess
 # Aktuelle Zeit und Datum
 now = datetime.now()
 kidname = ""
-output_file = "outputs/product_description.mp3"
+output_mp3 = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
+tts = GoogleTTS()
 
 def load_yaml(file_name):
     file_path = os.path.join(script_dir, file_name)
@@ -124,25 +125,31 @@ def play_with_aplay(file_path):
 
 def main():
      # Initialize the TTS class
-    tts = GoogleTTS()
     print("Product Lookup via GTIN")
     while True: # always loop the product search
         gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
-        title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
-        waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
-        if title and link: # if product is found
-            print(f"Gefundenes Produkt: {title}\nLink: {link}")
-            product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
-            print("\n" + product_info + "\n")
-        else:
-            print("Kein Produkt gefunden.")
-            product_info = generate_no_prouduct_found_response(kidname)
-        text_to_speak = product_info
-        tts.track_usage(text=text_to_speak, output_file=output_file, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
-        convert_mp3_to_wav(output_file, output_wav) # convert mp3 to wav
-        waitingMusic.terminate() # stop waiting music
-        waitingMusic.wait() # wait until process stopped
-        play_with_aplay(output_wav) # play the response text
+        if gtin:
+            output_mp3 = f"outputs/{gtin}_{language}.mp3"
+            output_wav = f"outputs/{gtin}_{language}.wav"
+            if not os.path.exists(output_wav):
+                print(f"File {gtin}_{language}.wav not found in output folder")
+                title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
+                waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
+                if title and link: # if product is found
+                    print(f"Gefundenes Produkt: {title}\nLink: {link}")
+                    product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
+                    print("\n" + product_info + "\n")
+                else:
+                    print("Kein Produkt gefunden.")
+                    product_info = generate_no_prouduct_found_response(kidname)
+                text_to_speak = product_info
+                tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+                convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
+                waitingMusic.terminate() # stop waiting music
+                waitingMusic.wait() # wait until process stopped
+            else:
+                print(f"File {gtin}_{language}.wav found in output folder")
+            play_with_aplay(output_wav) # play the response text
         
 if __name__ == "__main__":
     main()
