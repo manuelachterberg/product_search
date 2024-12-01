@@ -11,10 +11,10 @@ content: >
     Produktname: Bevola Kids 2 in 1 Shampoo & Dusche
     Link: https://example.com/product
   output_example: |
-    Hallo Levi
+    Hallo Levi, kleiner Matrose
     Das Produkt heißt "tetesept Kinder Badespaß Farbenspiel Bad Chamäleon".
     Ein Shampoo ist wie ein Seifen-Zauber für deine Haare! 🌟 Wenn du deine Haare wäschst, machst du sie mit Wasser nass und gibst dann etwas Shampoo darauf. Es macht ganz viel Schaum, der den Schmutz wegwäscht und deine Haare ganz sauber und weich macht.
-    "Mit dem Chamäleon in der Wanne, wird das Baden zur bunten Tanne!"
+    "Chamäleon in der Wanne, färbt das Wasser – volle Kanne!"
   instructions:
     - Arbeite mit dem Produktnamen und dem Link, die ich dir gebe, und beschreibe das Produkt auf eine kinderfreundliche, witzige Weise.
     - Erstelle eine kurze Erklärung des Produkts in einfacher Sprache für Kinder.
@@ -31,3 +31,5 @@ content: >
     Beschreibe das Produkt kinderfreundlich:
     <Kurze Erklärung, was das Produkt ist und wofür es gut ist>
     <Witziger, kinderfreundlicher Spruch>
+notfound: >
+  Hallo {kid_name}, leider konnte ich zu diesem Barcode nichts finden. Tut mir Leid. Bitte versuch einen anderen Barcode.

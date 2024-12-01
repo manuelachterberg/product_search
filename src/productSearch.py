@@ -10,10 +10,9 @@ import subprocess
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
-kidname = "Levi"
+kidname = ""
 output_file = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_yaml(file_name):
@@ -24,9 +23,32 @@ def load_env(file_name):
     file_path = os.path.join(script_dir, file_name)
     load_dotenv(file_path)
 
+def load_prompt_templates(language="en"):
+    # Construct the filenames dynamically based on the language
+    role_file = script_dir + f"/roles/ProductAgent_{language}.yaml"
+    prompt_file = script_dir + f"/prompts/productSearch_{language}.yaml"
+
+    # Check if the role file exists
+    if not os.path.exists(role_file):
+        raise FileNotFoundError(f"Role file for language '{language}' not found: {role_file}")
+    
+    # Check if the prompt file exists
+    if not os.path.exists(prompt_file):
+        raise FileNotFoundError(f"Prompt file for language '{language}' not found: {prompt_file}")
+    
+    # Load the YAML files
+    role_template = load_yaml(role_file)
+    prompt_template = load_yaml(prompt_file)
+    
+    return role_template, prompt_template
+
+
 load_env(".secrets") # Load secrets
-role = load_yaml("roles/ProductAgent.yaml")  # Load system role
-prompt_template = load_yaml("prompts/productSearch.yaml")  # Load prompt
+load_env(".env") # Load env
+kidname = (os.getenv("kidname"))
+language = (os.getenv("language"))
+voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
+role, prompt_template = load_prompt_templates(language)
 
 # Initialize the clients
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -55,6 +77,11 @@ def generate_creative_description(product_name, product_link, kidname="Levi"):
     )
 
     return response.choices[0].message.content.strip()
+
+def generate_no_prouduct_found_response(kidname="Levi"):
+    text = prompt_template["notfound"].replace("{kid_name}", kidname)
+    print(text)
+    return text
 
 def search_gtin_with_google(gtin):
     
@@ -99,23 +126,23 @@ def main():
      # Initialize the TTS class
     tts = GoogleTTS()
     print("Product Lookup via GTIN")
-    while True:
-        gtin = input("Enter GTIN (or 'exit' to quit): ").strip()
-        title, link = search_gtin_with_google(gtin)
-        waitingMusic = play_with_aplay("waitingMusic.wav")
-        if title and link:
+    while True: # always loop the product search
+        gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
+        title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
+        waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
+        if title and link: # if product is found
             print(f"Gefundenes Produkt: {title}\nLink: {link}")
+            product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
+            print("\n" + product_info + "\n")
         else:
             print("Kein Produkt gefunden.")
-        product_info = generate_creative_description(title, link, kidname)
-        print("\n" + product_info + "\n")
+            product_info = generate_no_prouduct_found_response(kidname)
         text_to_speak = product_info
-        # Generate TTS audio
-        tts.track_usage(text=text_to_speak, output_file=output_file, tone="excited")
-        convert_mp3_to_wav(output_file, output_wav)
-        waitingMusic.terminate()
-        waitingMusic.wait()
-        play_with_aplay(output_wav)
+        tts.track_usage(text=text_to_speak, output_file=output_file, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+        convert_mp3_to_wav(output_file, output_wav) # convert mp3 to wav
+        waitingMusic.terminate() # stop waiting music
+        waitingMusic.wait() # wait until process stopped
+        play_with_aplay(output_wav) # play the response text
         
 if __name__ == "__main__":
     main()
