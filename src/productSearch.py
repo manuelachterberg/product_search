@@ -150,16 +150,16 @@ def main():
      # Initialize the TTS class
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
-    output_mp3 = f"outputs/greeting_{kidname}.mp3"
-    output_wav = f"outputs/greeting_{kidname}.wav"
+    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname}.mp3")
+    output_wav = os.path.join(f"outputs/greeting_{kidname}.wav")
     tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
     play_with_aplay(output_wav) # play the response text
     while True: # always loop the product search
         gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
         if gtin:
-            output_mp3 = f"outputs/{gtin}_{language}.mp3"
-            output_wav = f"outputs/{gtin}_{language}.wav"
+            output_mp3 = os.path.join(f"outputs/{gtin}_{language}.mp3")
+            output_wav = os.path.join(f"outputs/{gtin}_{language}.wav")
             if not os.path.exists(output_wav):
                 print(f"File {gtin}_{language}.wav not found in output folder")
                 title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
