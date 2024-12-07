@@ -79,6 +79,29 @@ def generate_creative_description(product_name, product_link, kidname="Levi"):
 
     return response.choices[0].message.content.strip()
 
+def generate_greeting(kidname="Levi"):
+    # prompt = "Erstelle eine komplette Nachrichtensendung mit den folgenden Elementen:\n\n"
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    day_period = get_day_period()
+    prompt = f"Es ist aktuell {day_period}, am , {current_date}.\n\n"
+    prompt_template_string = prompt_template["greeting"]
+    prompt += prompt_template_string.replace("{kid_name}", kidname)
+    print(prompt)
+        
+    # ChatGPT Aufruf
+    response = client.chat.completions.create(
+        model="gpt-4",  # Adjust model as necessary
+        messages=[
+            {"role": "system", "content": role["content"]},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1500,
+        temperature=0.1
+    )
+
+    return response.choices[0].message.content.strip()
+
 def generate_no_prouduct_found_response(kidname="Levi"):
     text = prompt_template["notfound"].replace("{kid_name}", kidname)
     print(text)
@@ -126,6 +149,12 @@ def play_with_aplay(file_path):
 def main():
      # Initialize the TTS class
     print("Product Lookup via GTIN")
+    text_to_speak = generate_greeting(kidname=kidname)
+    output_mp3 = f"outputs/greeting_{kidname}.mp3"
+    output_wav = f"outputs/greeting_{kidname}.wav"
+    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
+    play_with_aplay(output_wav) # play the response text
     while True: # always loop the product search
         gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
         if gtin:

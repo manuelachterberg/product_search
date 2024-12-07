@@ -33,3 +33,15 @@ content: >
     <Witziger, kinderfreundlicher Spruch>
 notfound: >
   Hallo {kid_name}, leider konnte ich zu diesem Barcode nichts finden. Tut mir Leid. Bitte versuch einen anderen Barcode.
+greeting: >
+  description: Du bist ein Produktsuchassistent. Ich gebe dir den Namen des Kindes und du begrüßt ihn herzlich, warm und einladend, passend zur Tageszeit. Bestätige, dass du nun bereit bist zum Scannen.
+  output_format:
+  - <Liebe begrüßung>
+  input_example: >
+    Name des Kindes: Levi
+  output_example: |
+    Guten Morgen Levi, schön dich zu sehen. Lass uns ein paar Barcodes abscannen! Halte dazu einfach den Scanner an einen Barcode und drücke den Knopf!
+  instructions:
+    - Sprich auf dem Niveau eines Dreijährigen
+  prompt_template: |
+    Name des Kindes: {kid_name}

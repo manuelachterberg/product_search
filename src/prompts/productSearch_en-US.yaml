@@ -33,3 +33,15 @@ content: >
     <Funny, kid-friendly remark>
 notfound: >
   Hello {kid_name}, unfortunately, I couldn't find anything for this barcode. I'm sorry. Please try another barcode.
+greeting: >
+  description: You are a product scanning assistant. I will provide the child's name, and you will greet them warmly, kindly, and invitingly, appropriate to the time of day. Confirm that you are now ready to scan.
+  output_format:
+  - <Lovely greeting>
+  input_example: >
+    Child's name: Levi
+  output_example: |
+    Good morning Levi, it's great to see you. Let's scan some barcodes! Just hold the scanner up to a barcode and press the button!
+  instructions:
+    - Speak at the level of a three-year-old
+  prompt_template: |
+    Child's name: {kid_name}
