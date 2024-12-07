@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 class GoogleTTS:
-    def __init__(self, secrets_file=".secrets", usage_file="tts_usage.json"):
+    def __init__(self, secrets_file=".secrets", usage_file=os.path.join(script_dir, "tts_usage.json")):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.secrets_path = os.path.join(script_dir, secrets_file)
         self.usage_file = os.path.join(usage_file)
