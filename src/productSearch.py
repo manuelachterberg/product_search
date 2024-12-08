@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from tts import GoogleTTS
 import subprocess
+from evdev import InputDevice, categorize, ecodes
+import threading
 
 
 # Aktuelle Zeit und Datum
@@ -43,18 +45,37 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
-
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
 kidname = (os.getenv("kidname"))
 language = (os.getenv("language"))
 voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
 role, prompt_template = load_prompt_templates(language)
+scanner_device = (os.getenv("scannerdevice"))
 
 # Initialize the clients
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 google_api_key = (os.getenv("GOOGLE_API_KEY"))
 google_search_id = (os.getenv("GOOGLE_SEARCH_ID"))
+
+def read_barcode():
+    """
+    Reads barcodes from the scanner using evdev and yields scanned input.
+    """
+    device = InputDevice(scanner_device)
+    print(f"Listening for barcode input from {device.name}...")
+
+    barcode = ""
+    for event in device.read_loop():
+        if event.type == ecodes.EV_KEY:
+            key_event = categorize(event)
+            if key_event.keystate == 1:  # Key down event
+                key = key_event.keycode
+                if key == "KEY_ENTER":  # End of barcode
+                    yield barcode
+                    barcode = ""
+                elif "KEY_" in key:
+                    barcode += key.replace("KEY_", "")  # Append character
 
 def generate_creative_description(product_name, product_link, kidname="Levi"):
     # prompt = "Erstelle eine komplette Nachrichtensendung mit den folgenden Elementen:\n\n"
@@ -155,30 +176,38 @@ def main():
     tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
     play_with_aplay(output_wav) # play the response text
+
+
     while True: # always loop the product search
-        gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
-        if gtin:
-            output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
-            output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
-            if not os.path.exists(output_wav):
-                print(f"File {gtin}_{language}.wav not found in output folder")
-                title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
-                waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
-                if title and link: # if product is found
-                    print(f"Gefundenes Produkt: {title}\nLink: {link}")
-                    product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
-                    print("\n" + product_info + "\n")
+        print("Waiting for scanner input...")
+        # Start barcode scanning
+        barcode_generator = read_barcode()
+        #gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
+        for gtin in barcode_generator:
+            gtin = gtin.strip()
+            print(f"Scanned GTIN: {gtin}")
+            if gtin:
+                output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
+                output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
+                if not os.path.exists(output_wav):
+                    print(f"File {gtin}_{language}.wav not found in output folder")
+                    title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
+                    waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
+                    if title and link: # if product is found
+                        print(f"Gefundenes Produkt: {title}\nLink: {link}")
+                        product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
+                        print("\n" + product_info + "\n")
+                    else:
+                        print("Kein Produkt gefunden.")
+                        product_info = generate_no_prouduct_found_response(kidname)
+                    text_to_speak = product_info
+                    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+                    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
+                    waitingMusic.terminate() # stop waiting music
+                    waitingMusic.wait() # wait until process stopped
                 else:
-                    print("Kein Produkt gefunden.")
-                    product_info = generate_no_prouduct_found_response(kidname)
-                text_to_speak = product_info
-                tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
-                convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
-                waitingMusic.terminate() # stop waiting music
-                waitingMusic.wait() # wait until process stopped
-            else:
-                print(f"File {gtin}_{language}.wav found in output folder")
-            play_with_aplay(output_wav) # play the response text
+                    print(f"File {gtin}_{language}.wav found in output folder")
+                play_with_aplay(output_wav) # play the response text
         
 if __name__ == "__main__":
     main()
