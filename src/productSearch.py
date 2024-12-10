@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from tts import GoogleTTS
 import subprocess
 from evdev import InputDevice, categorize, ecodes
-import threading
+import re
 
 
 # Aktuelle Zeit und Datum
@@ -58,7 +58,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 google_api_key = (os.getenv("GOOGLE_API_KEY"))
 google_search_id = (os.getenv("GOOGLE_SEARCH_ID"))
 
-def read_barcode():
+def read_barcode(scanner_device):
     """
     Reads barcodes from the scanner using evdev and yields scanned input.
     """
@@ -72,7 +72,9 @@ def read_barcode():
             if key_event.keystate == 1:  # Key down event
                 key = key_event.keycode
                 if key == "KEY_ENTER":  # End of barcode
-                    yield barcode
+                    # Use regex to filter only numeric characters before yielding
+                    numeric_barcode = re.sub(r"[^\d]", "", barcode)
+                    yield numeric_barcode
                     barcode = ""
                 elif "KEY_" in key:
                     barcode += key.replace("KEY_", "")  # Append character
