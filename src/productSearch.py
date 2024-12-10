@@ -58,7 +58,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 google_api_key = (os.getenv("GOOGLE_API_KEY"))
 google_search_id = (os.getenv("GOOGLE_SEARCH_ID"))
 
-def read_barcode(scanner_device):
+def read_barcode():
     """
     Reads barcodes from the scanner using evdev and yields scanned input.
     """
