@@ -52,6 +52,7 @@ language = (os.getenv("language"))
 voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
 role, prompt_template = load_prompt_templates(language)
 scanner_device = (os.getenv("scannerdevice"))
+os.path.join(script_dir, f"waitingMusic.wav")
 
 # Initialize the clients
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
