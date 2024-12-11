@@ -51,7 +51,7 @@ class GoogleTTS:
         # Configure the audio with pitch and speed adjustments
         audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.MP3,
-            speaking_rate=0.8,  # Slightly slower
+            speaking_rate=0.9,  # Slightly slower
             pitch=5.0           # Higher pitch for excitement
         )
 
