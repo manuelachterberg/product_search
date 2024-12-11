@@ -52,7 +52,7 @@ language = (os.getenv("language"))
 voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
 role, prompt_template = load_prompt_templates(language)
 scanner_device = (os.getenv("scannerdevice"))
-os.path.join(script_dir, f"waitingMusic.wav")
+waiting_music = os.path.join(script_dir, f"waitingMusic.wav")
 
 # Initialize the clients
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -195,7 +195,7 @@ def main():
                 if not os.path.exists(output_wav):
                     print(f"File {gtin}_{language}.wav not found in output folder")
                     title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
-                    waitingMusic = play_with_aplay("waitingMusic.wav") # Play waiting music
+                    waitingMusic = play_with_aplay(waiting_music) # Play waiting music
                     if title and link: # if product is found
                         print(f"Gefundenes Produkt: {title}\nLink: {link}")
                         product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
