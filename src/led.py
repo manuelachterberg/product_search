@@ -1,37 +1,31 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero import RGBLED
+from time import sleep
 
 # Pin Definitions
-RED_PIN = 17
-GREEN_PIN = 22
-BLUE_PIN = 27
-
-# GPIO Setup
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(RED_PIN, GPIO.OUT)
-GPIO.setup(GREEN_PIN, GPIO.OUT)
-GPIO.setup(BLUE_PIN, GPIO.OUT)
+led = RGBLED(red=17, green=22, blue=27)
 
 try:
-    # Test red
-    print("Testing RED")
-    GPIO.output(RED_PIN, GPIO.HIGH)
-    time.sleep(2)
-    GPIO.output(RED_PIN, GPIO.LOW)
-    
-    # Test green
-    print("Testing GREEN")
-    GPIO.output(GREEN_PIN, GPIO.HIGH)
-    time.sleep(2)
-    GPIO.output(GREEN_PIN, GPIO.LOW)
-    
-    # Test blue
-    print("Testing BLUE")
-    GPIO.output(BLUE_PIN, GPIO.HIGH)
-    time.sleep(2)
-    GPIO.output(BLUE_PIN, GPIO.LOW)
+    while True:
+        print("Red")
+        led.color = (1, 0, 0)  # Red
+        sleep(1)
+        
+        print("Green")
+        led.color = (0, 1, 0)  # Green
+        sleep(1)
+        
+        print("Blue")
+        led.color = (0, 0, 1)  # Blue
+        sleep(1)
+        
+        print("White")
+        led.color = (1, 1, 1)  # White
+        sleep(1)
+        
+        print("Off")
+        led.off()  # Turn off the LED
+        sleep(1)
 
 except KeyboardInterrupt:
     print("Exiting...")
-finally:
-    GPIO.cleanup()
+    led.off()  # Ensure LED is off on exit
