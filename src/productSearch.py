@@ -225,8 +225,10 @@ def main():
                 while answer.poll() is None:
                     print("Playback in progress...")
                     time.sleep(1)
-                print("Playback finished")
-                continue
+
+                # Playback finished
+                print("Playback finished.")
+                continue  # Move to the next file
         
 if __name__ == "__main__":
     main()
