@@ -1,31 +1,55 @@
-from gpiozero import RGBLED
+import RPi.GPIO as GPIO
 from time import sleep
 
-# Remap Pins to Match Observed Colors
-led = RGBLED(red=23, green=22, blue=24, active_high=False)  # Adjust active_high for common anode/cathode
+# Pin Definitions
+RED_PIN = 23   # GPIO for Red (update as per your wiring)
+GREEN_PIN = 22 # GPIO for Green (update as per your wiring)
+BLUE_PIN = 8   # GPIO for Blue (working configuration)
+
+# Setup
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(RED_PIN, GPIO.OUT, initial=GPIO.LOW)    # LOW = OFF for common cathode
+GPIO.setup(GREEN_PIN, GPIO.OUT, initial=GPIO.LOW)  # LOW = OFF for common cathode
+GPIO.setup(BLUE_PIN, GPIO.OUT, initial=GPIO.LOW)   # LOW = OFF for common cathode
 
 try:
     while True:
-        print("Red")
-        led.color = (1, 0, 0)  # Red (now mapped to GPIO 23)
-        sleep(1)
+        # Red ON
+        print("Red ON")
+        GPIO.output(RED_PIN, GPIO.HIGH)  # HIGH = ON for common cathode
+        GPIO.output(GREEN_PIN, GPIO.LOW) # Ensure other colors are OFF
+        GPIO.output(BLUE_PIN, GPIO.LOW)
+        sleep(2)
 
-        print("Green")
-        led.color = (0, 1, 0)  # Green (now mapped to GPIO 22)
-        sleep(1)
+        # Green ON
+        print("Green ON")
+        GPIO.output(RED_PIN, GPIO.LOW)
+        GPIO.output(GREEN_PIN, GPIO.HIGH)  # HIGH = ON for common cathode
+        GPIO.output(BLUE_PIN, GPIO.LOW)
+        sleep(2)
 
-        print("Blue")
-        led.color = (0, 0, 1)  # Blue (still GPIO 24)
-        sleep(1)
+        # Blue ON
+        print("Blue ON")
+        GPIO.output(RED_PIN, GPIO.LOW)
+        GPIO.output(GREEN_PIN, GPIO.LOW)
+        GPIO.output(BLUE_PIN, GPIO.HIGH)  # HIGH = ON for common cathode
+        sleep(2)
 
-        print("White")
-        led.color = (1, 1, 1)  # White (all segments on)
-        sleep(1)
+        # White (All Colors ON)
+        print("White ON")
+        GPIO.output(RED_PIN, GPIO.HIGH)
+        GPIO.output(GREEN_PIN, GPIO.HIGH)
+        GPIO.output(BLUE_PIN, GPIO.HIGH)  # All ON
+        sleep(2)
 
-        print("Off")
-        led.off()
-        sleep(1)
+        # All OFF
+        print("All OFF")
+        GPIO.output(RED_PIN, GPIO.LOW)
+        GPIO.output(GREEN_PIN, GPIO.LOW)
+        GPIO.output(BLUE_PIN, GPIO.LOW)
+        sleep(2)
 
 except KeyboardInterrupt:
     print("Exiting...")
-    led.off()
+finally:
+    GPIO.cleanup()
