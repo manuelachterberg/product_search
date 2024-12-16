@@ -8,6 +8,7 @@ from tts import GoogleTTS
 import subprocess
 from evdev import InputDevice, categorize, ecodes
 import re
+from rgb_led import RGBLEDController
 
 
 # Aktuelle Zeit und Datum
@@ -17,6 +18,8 @@ output_mp3 = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 tts = GoogleTTS()
+led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
+
 
 def load_yaml(file_name):
     file_path = os.path.join(script_dir, file_name)
@@ -171,6 +174,8 @@ def play_with_aplay(file_path):
         return None
 
 def main():
+    print("Green ON")
+    led.set_color(1, 0, 0)  # Red
      # Initialize the TTS class
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
@@ -182,11 +187,13 @@ def main():
 
 
     while True: # always loop the product search
+        led.set_color(0, 0, 1)  # Blue
         print("Waiting for scanner input...")
         # Start barcode scanning
         barcode_generator = read_barcode()
         #gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
         for gtin in barcode_generator:
+            led.set_color(1, 1, 0)  # Orange
             gtin = gtin.strip()
             print(f"Scanned GTIN: {gtin}")
             if gtin:
@@ -197,10 +204,12 @@ def main():
                     title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
                     waitingMusic = play_with_aplay(waiting_music) # Play waiting music
                     if title and link: # if product is found
+                        led.set_color(0, 1, 0)  # Green
                         print(f"Gefundenes Produkt: {title}\nLink: {link}")
                         product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
                         print("\n" + product_info + "\n")
                     else:
+                        led.set_color(1, 0, 0)  # Red
                         print("Kein Produkt gefunden.")
                         product_info = generate_no_prouduct_found_response(kidname)
                     text_to_speak = product_info
