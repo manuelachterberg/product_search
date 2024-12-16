@@ -9,6 +9,7 @@ import subprocess
 from evdev import InputDevice, categorize, ecodes
 import re
 from rgb_led import RGBLEDController
+import time
 
 
 # Aktuelle Zeit und Datum
@@ -219,7 +220,13 @@ def main():
                     waitingMusic.wait() # wait until process stopped
                 else:
                     print(f"File {gtin}_{language}.wav found in output folder")
-                play_with_aplay(output_wav) # play the response text
+                answer = play_with_aplay(output_wav) # play the response text
+                # Poll until the process finishes
+                while answer.poll() is None:
+                    print("Playback in progress...")
+                    time.sleep(1)
+                print("Playback finished")
+                continue
         
 if __name__ == "__main__":
     main()
