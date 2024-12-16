@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 from time import sleep
 
 # Pin Definitions
-RED_PIN = 23   # GPIO for Red (update as per your wiring)
-GREEN_PIN = 22 # GPIO for Green (update as per your wiring)
+RED_PIN = 22   # GPIO for Red (update as per your wiring)
+GREEN_PIN = 23 # GPIO for Green (update as per your wiring)
 BLUE_PIN = 8   # GPIO for Blue (working configuration)
 
 # Setup
