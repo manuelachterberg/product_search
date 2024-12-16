@@ -228,7 +228,10 @@ def main():
 
                 # Playback finished
                 print("Playback finished.")
-                continue  # Move to the next file
+                break  # Move break the for loop iterating through gtins
+            print("Continuing the scanning process...")
+            continue  # Move to the next GTIN in the generator
+        print("Starting from the beginning")
         
 if __name__ == "__main__":
     main()
