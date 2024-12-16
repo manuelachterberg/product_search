@@ -1,8 +1,8 @@
 from gpiozero import RGBLED
 from time import sleep
 
-# Pin Definitions
-led = RGBLED(red=17, green=22, blue=27)
+# Initialize RGBLED
+led = RGBLED(red=22, green=23, blue=24, active_high=False)  # Set active_high based on LED type
 
 try:
     while True:
