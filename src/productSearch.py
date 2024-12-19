@@ -219,6 +219,7 @@ def main():
                     waitingMusic.terminate() # stop waiting music
                     waitingMusic.wait() # wait until process stopped
                 else:
+                    led.set_color(0, 1, 0)  # Green
                     print(f"File {gtin}_{language}.wav found in output folder")
                 answer = play_with_aplay(output_wav) # play the response text
                 # Poll until the process finishes
