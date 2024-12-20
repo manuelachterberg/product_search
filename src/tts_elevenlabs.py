@@ -64,18 +64,31 @@ class ElevenLabsTTS:
             json.dump(usage_data, f, indent=4)
 
     def track_usage(self, text, output_file, voice_id="AnvlJBAqSLDzEevYr9Ap", model_id="eleven_multilingual_v2"):
+        """
+        Tracks usage while synthesizing speech.
+        Args:
+            text (str): The text to synthesize.
+            output_file (str): Path to save the output file.
+            voice_id (str): The voice ID for synthesis.
+            model_id (str): The model ID for synthesis.
+        """
         usage_data = self.load_usage_data()
         print(f"Total characters used so far: {usage_data['total_characters']}")
 
         # Synthesize speech and get character count
-        char_count = self.synthesize_speech(text, output_file, voice_id, model_id)
+        char_count = self.synthesize_speech(
+            text=text,
+            output_file=output_file,
+            voice_id=voice_id,
+            model_id=model_id
+        )
 
-        # Update usage tracking
-        usage_data["total_characters"] += char_count
-        usage_data["last_updated"] = datetime.now().isoformat()
-        self.save_usage_data(usage_data)
+    # Update usage tracking
+    usage_data["total_characters"] += char_count
+    usage_data["last_updated"] = datetime.now().isoformat()
+    self.save_usage_data(usage_data)
 
-        print(f"Updated total character count: {usage_data['total_characters']}")
+    print(f"Updated total character count: {usage_data['total_characters']}")
 
 if __name__ == "__main__":
     tts = ElevenLabsTTS()
