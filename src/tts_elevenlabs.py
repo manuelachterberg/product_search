@@ -18,7 +18,7 @@ class ElevenLabsTTS:
         if not self.api_key:
             raise ValueError("ELEVENLABS_API_KEY not found in environment variables.")
 
-    def synthesize_speech(self, text, output_file, voice_id="AnvlJBAqSLDzEevYr9Ap", model_id="eleven_multilingual_v2"):
+    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
         # Ensure the output directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
@@ -63,7 +63,7 @@ class ElevenLabsTTS:
         with open(self.usage_file, "w") as f:
             json.dump(usage_data, f, indent=4)
 
-    def track_usage(self, text, output_file, voice_id="AnvlJBAqSLDzEevYr9Ap", model_id="eleven_multilingual_v2"):
+    def track_usage(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
         """
         Tracks usage while synthesizing speech.
         Args:
