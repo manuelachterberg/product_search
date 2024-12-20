@@ -15,6 +15,7 @@ import time
 # Aktuelle Zeit und Datum
 now = datetime.now()
 kidname = ""
+kidname_short = ""
 output_mp3 = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -54,6 +55,7 @@ def load_prompt_templates(language="en"):
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
 kidname = (os.getenv("kidname"))
+kidname_short = (os.getenv("kidname_short"))
 language = (os.getenv("language"))
 #voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
 role, prompt_template = load_prompt_templates(language)
@@ -189,8 +191,8 @@ def main():
      # Initialize the TTS class
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
-    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname}.mp3")
-    output_wav = os.path.join(script_dir, "outputs/greeting_{kidname}.wav")
+    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
+    output_wav = os.path.join(script_dir, "outputs/greeting_{kidname_short}.wav")
     tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
     play_with_aplay(output_wav) # play the response text
