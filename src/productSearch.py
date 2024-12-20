@@ -182,7 +182,7 @@ def main():
     text_to_speak = generate_greeting(kidname=kidname)
     output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname}.mp3")
     output_wav = os.path.join(script_dir, "outputs/greeting_{kidname}.wav")
-    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+    tts.track_usage(text=text_to_speak, output_file=output_mp3, voice_name=voice_model)  # TTS the text and track character usage for the api
     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
     play_with_aplay(output_wav) # play the response text
 
@@ -214,7 +214,7 @@ def main():
                         print("Kein Produkt gefunden.")
                         product_info = generate_no_prouduct_found_response(kidname)
                     text_to_speak = product_info
-                    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
+                    tts.track_usage(text=text_to_speak, output_file=output_mp3, voice_name=voice_model)  # TTS the text and track character usage for the api
                     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
                     waitingMusic.terminate() # stop waiting music
                     waitingMusic.wait() # wait until process stopped
