@@ -18,7 +18,7 @@ kidname = ""
 output_mp3 = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
-tts = GoogleTTS()
+tts = ElevenLabsTTS()
 led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
 
 
