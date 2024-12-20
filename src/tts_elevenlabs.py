@@ -72,8 +72,11 @@ class ElevenLabsTTS:
             voice_id (str): The voice ID for synthesis.
             model_id (str): The model ID for synthesis.
         """
+        # Ensure usage data is loaded
         usage_data = self.load_usage_data()
-        print(f"Total characters used so far: {usage_data['total_characters']}")
+
+        # Debugging: Print the current usage data
+        print(f"Loaded usage data: {usage_data}")
 
         # Synthesize speech and get character count
         char_count = self.synthesize_speech(
@@ -83,12 +86,18 @@ class ElevenLabsTTS:
             model_id=model_id
         )
 
-    # Update usage tracking
-    usage_data["total_characters"] += char_count
-    usage_data["last_updated"] = datetime.now().isoformat()
-    self.save_usage_data(usage_data)
+        # Update usage tracking
+        if "total_characters" not in usage_data:
+            usage_data["total_characters"] = 0  # Initialize if not present
 
-    print(f"Updated total character count: {usage_data['total_characters']}")
+        usage_data["total_characters"] += char_count
+        usage_data["last_updated"] = datetime.now().isoformat()
+
+        # Save the updated usage data
+        self.save_usage_data(usage_data)
+
+        # Print the updated character count
+        print(f"Updated total character count: {usage_data['total_characters']}")
 
 if __name__ == "__main__":
     tts = ElevenLabsTTS()
