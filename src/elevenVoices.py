@@ -2,7 +2,7 @@ import requests
 import json
 
 # Replace with your ElevenLabs API key
-API_KEY = "sk_602419aa8fe50c1aa9a4afeeb3d1ebd3a3a82f1405d97871"  # Replace this with your actual API Key
+API_KEY = ""  # Replace this with your actual API Key
 
 # Endpoint URL for getting shared voices
 url = "https://api.elevenlabs.io/v1/shared-voices"

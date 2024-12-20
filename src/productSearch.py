@@ -230,6 +230,8 @@ def main():
                     led.set_color(0, 1, 0)  # Green
                     print(f"File {gtin}_{language}.wav found in output folder")
                 waitingMusic.wait() # wait until process stopped
+                if 'answer' in locals() and answer.poll() is None:
+                    answer.terminate() # Ensure previous playback is stopped
                 answer = play_with_aplay(output_wav) # play the response text
                 # Poll until the process finishes
                 while answer.poll() is None:
