@@ -187,68 +187,69 @@ def play_with_aplay(file_path):
         print("Error: 'aplay' is not installed or not found in PATH.")
         return None
 
+def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
+    led.set_color(1, 1, 0)  # Orange
+    gtin = gtin.strip()
+    print(f"Scanned GTIN: {gtin}")
+    if gtin:
+        output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
+        output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
+        if not os.path.exists(output_wav):
+            print(f"File {gtin}_{language}.wav not found in output folder")
+            title, link = search_gtin_with_google(gtin)  # Search GTIN with google search API
+            waitingMusic = play_with_aplay(waiting_music)  # Play waiting music
+            if title and link:  # if product is found
+                led.set_color(0, 1, 0)  # Green
+                print(f"Gefundenes Produkt: {title}\nLink: {link}")
+                product_info = generate_creative_description(title, link, kidname)  # create a nice description using OpenAI API
+                print("\n" + product_info + "\n")
+            else:
+                led.set_color(1, 0, 0)  # Red
+                print("Kein Produkt gefunden.")
+                product_info = generate_no_prouduct_found_response(kidname)
+            text_to_speak = product_info
+            tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+            convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+            waitingMusic.terminate()  # stop waiting music
+        else:
+            led.set_color(0, 1, 0)  # Green
+            print(f"File {gtin}_{language}.wav found in output folder")
+        waitingMusic.wait()  # wait until process stopped
+        if 'answer' in locals() and answer.poll() is None:
+            answer.terminate()  # Ensure previous playback is stopped
+        answer = play_with_aplay(output_wav)  # play the response text
+        # Poll until the process finishes
+        while answer.poll() is None:
+            print("Playback in progress...")
+            time.sleep(5)
+
+        # Playback finished
+        print("Playback finished.")
+        return True  # Indicate that the GTIN was handled
+    return False  # Indicate that the GTIN was not handled
+
 def main():
     print("Green ON")
     led.set_color(1, 0, 0)  # Red
-     # Initialize the TTS class
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
     output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
     output_wav = os.path.join(script_dir, "outputs/greeting_{kidname_short}.wav")
     tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
-    play_with_aplay(output_wav) # play the response text
+    convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+    play_with_aplay(output_wav)  # play the response text
 
-
-    while True: # always loop the product search
+    while True:  # always loop the product search
         led.set_color(0, 0, 1)  # Blue
         print("Waiting for scanner input...")
         # Start barcode scanning
         barcode_generator = read_barcode()
-        #gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
         for gtin in barcode_generator:
-            led.set_color(1, 1, 0)  # Orange
-            gtin = gtin.strip()
-            print(f"Scanned GTIN: {gtin}")
-            if gtin:
-                output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
-                output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
-                if not os.path.exists(output_wav):
-                    print(f"File {gtin}_{language}.wav not found in output folder")
-                    title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
-                    waitingMusic = play_with_aplay(waiting_music) # Play waiting music
-                    if title and link: # if product is found
-                        led.set_color(0, 1, 0)  # Green
-                        print(f"Gefundenes Produkt: {title}\nLink: {link}")
-                        product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
-                        print("\n" + product_info + "\n")
-                    else:
-                        led.set_color(1, 0, 0)  # Red
-                        print("Kein Produkt gefunden.")
-                        product_info = generate_no_prouduct_found_response(kidname)
-                    text_to_speak = product_info
-                    tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-                    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
-                    waitingMusic.terminate() # stop waiting music
-                else:
-                    led.set_color(0, 1, 0)  # Green
-                    print(f"File {gtin}_{language}.wav found in output folder")
-                waitingMusic.wait() # wait until process stopped
-                if 'answer' in locals() and answer.poll() is None:
-                    answer.terminate() # Ensure previous playback is stopped
-                answer = play_with_aplay(output_wav) # play the response text
-                # Poll until the process finishes
-                while answer.poll() is None:
-                    print("Playback in progress...")
-                    time.sleep(5)
-
-                # Playback finished
-                print("Playback finished.")
+            if handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 break  # Move break the for loop iterating through gtins
             print("Continuing the scanning process...")
-            continue  # Move to the next GTIN in the generator
         print("Starting from the beginning")
-        
+
 if __name__ == "__main__":
     main()
 
