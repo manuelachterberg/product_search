@@ -174,12 +174,14 @@ def play_with_aplay(file_path):
     try:
         # If a process is already running, terminate it
         if current_process and current_process.poll() is None:  # Check if the process is still running
+            print(f"Terminating previous 'aplay' process with PID {current_process.pid}")
             current_process.terminate()
             current_process.wait()  # Ensure the process is cleaned up
             print("Previous 'aplay' process terminated.")
 
         # Start a new process
         current_process = subprocess.Popen(["aplay", file_path])
+        print(f"Started new 'aplay' process with PID {current_process.pid}")
         return current_process  # Return the process handle so it can be managed later
     except FileNotFoundError:
         print("Error: 'aplay' is not installed or not found in PATH.")
