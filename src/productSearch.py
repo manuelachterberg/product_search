@@ -4,7 +4,7 @@ import os
 import yaml
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
-from tts import GoogleTTS
+from tts_elevenlabs import ElevenLabsTTS
 import subprocess
 from evdev import InputDevice, categorize, ecodes
 import re
