@@ -226,15 +226,15 @@ def main():
                     tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
                     convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
                     waitingMusic.terminate() # stop waiting music
-                    waitingMusic.wait() # wait until process stopped
                 else:
                     led.set_color(0, 1, 0)  # Green
                     print(f"File {gtin}_{language}.wav found in output folder")
+                waitingMusic.wait() # wait until process stopped
                 answer = play_with_aplay(output_wav) # play the response text
                 # Poll until the process finishes
                 while answer.poll() is None:
                     print("Playback in progress...")
-                    time.sleep(1)
+                    time.sleep(5)
 
                 # Playback finished
                 print("Playback finished.")
