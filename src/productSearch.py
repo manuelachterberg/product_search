@@ -20,6 +20,8 @@ output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 tts = ElevenLabsTTS()
 led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
+current_process = None
+
 
 
 def load_yaml(file_name):
@@ -166,10 +168,17 @@ def convert_mp3_to_wav(mp3_file, wav_file):
     subprocess.run(["ffmpeg", "-y", "-i", mp3_file, wav_file], check=True)
 
 def play_with_aplay(file_path):
+    global current_process  # Use a global variable to track the running process
     try:
-        # Start aplay in the background
-        process = subprocess.Popen(["aplay", file_path])
-        return process  # Return the process handle so it can be terminated later
+        # If a process is already running, terminate it
+        if current_process and current_process.poll() is None:  # Check if the process is still running
+            current_process.terminate()
+            current_process.wait()  # Ensure the process is cleaned up
+            print("Previous 'aplay' process terminated.")
+
+        # Start a new process
+        current_process = subprocess.Popen(["aplay", file_path])
+        return current_process  # Return the process handle so it can be managed later
     except FileNotFoundError:
         print("Error: 'aplay' is not installed or not found in PATH.")
         return None
