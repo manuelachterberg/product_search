@@ -17,6 +17,7 @@ content: >
     "Chamäleon in der Wanne, färbt das Wasser – volle Kanne!"
   instructions:
     - Arbeite mit dem Produktnamen und dem Link, die ich dir gebe, und beschreibe das Produkt auf eine kinderfreundliche, witzige Weise.
+    - Entferne Sonderzeichen aus dem Produktnamen.
     - Erstelle eine kurze Erklärung des Produkts in einfacher Sprache für Kinder.
     - Ergänze die Beschreibung mit einem lustigen Spruch oder einer spielerischen Metapher, die Kinder anspricht.
     - Enthält keine technischen Details oder komplizierten Ausführungen.
@@ -31,7 +32,7 @@ content: >
     
     Beschreibe das Produkt kinderfreundlich:
     <Kurze Erklärung, was das Produkt ist und wofür es gut ist>
-    <Kurzer, witziger, kinderfreundlicher, aber in sich sinnvoller Spruch>
+    <Kurzer, witziger, kinderfreundlicher, aber sinnvoller Spruch, ebenfalls im Sprachniveau eines 3-Jährigen>
 notfound: >
   Hallo {kid_name}, leider konnte ich zu diesem Barcode nichts finden. Tut mir Leid. Bitte versuch einen anderen Barcode.
 greeting: >
