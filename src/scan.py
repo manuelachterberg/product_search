@@ -1,7 +1,7 @@
 from evdev import InputDevice, categorize, ecodes
 
 # Replace with your device's event file
-device_path = '/dev/input/by-id/usb-040b_6543-if01-event-kbd'
+device_path = '/dev/input/by-id/4511338006795usb-040b_6543-if01-event-kbd'
 
 try:
     device = InputDevice(device_path)
