@@ -12,6 +12,7 @@ import time
 from pydub import AudioSegment
 from openai import OpenAI
 from io import BytesIO
+from elevenlabs import stream
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
