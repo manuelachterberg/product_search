@@ -1,4 +1,3 @@
-from openai import OpenAI
 from datetime import datetime
 import os
 import yaml
@@ -10,7 +9,8 @@ from evdev import InputDevice, categorize, ecodes
 import re
 from rgb_led import RGBLEDController
 import time
-
+import simpleaudio as sa
+from pydub import AudioSegment
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
@@ -23,12 +23,11 @@ tts = ElevenLabsTTS()
 led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
 current_process = None
 
-
-
 def load_yaml(file_name):
     file_path = os.path.join(script_dir, file_name)
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
+
 def load_env(file_name):
     file_path = os.path.join(script_dir, file_name)
     load_dotenv(file_path)
@@ -52,20 +51,44 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
+def play_audio_stream(text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=10):
+    # Stream the audio content and play it in chunks
+    temp_output_file = output_file + ".temp"
+    with open(temp_output_file, "wb") as out:
+        for chunk in tts.synthesize_speech_stream(text, voice_id, model_id):
+            out.write(chunk)
+            # Play the chunk using simpleaudio
+            audio_segment = AudioSegment.from_file(temp_output_file, format="mp3")
+            louder_audio = audio_segment + volume_increase_db
+            play_obj = sa.play_buffer(louder_audio.raw_data, num_channels=louder_audio.channels, bytes_per_sample=louder_audio.sample_width, sample_rate=louder_audio.frame_rate)
+            play_obj.wait_done()
+        print(f"Audio content saved to '{temp_output_file}'")
+
+    # Load the audio file with pydub
+    audio = AudioSegment.from_file(temp_output_file)
+
+    # Increase the volume
+    louder_audio = audio + volume_increase_db
+
+    # Export the louder audio to the final output file
+    louder_audio.export(output_file, format="mp3")
+    os.remove(temp_output_file)
+    print(f"Louder audio content saved to '{output_file}'")
+
+# Load environment variables
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
-kidname = (os.getenv("kidname"))
-kidname_short = (os.getenv("kidname_short"))
-language = (os.getenv("language"))
-#voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
+kidname = os.getenv("kidname")
+kidname_short = os.getenv("kidname_short")
+language = os.getenv("language")
 role, prompt_template = load_prompt_templates(language)
-scanner_device = (os.getenv("scannerdevice"))
+scanner_device = os.getenv("scannerdevice")
 waiting_music = script_dir + f"/assets/waitingMusic.wav"
 
 # Initialize the clients
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-google_api_key = (os.getenv("GOOGLE_API_KEY"))
-google_search_id = (os.getenv("GOOGLE_SEARCH_ID"))
+google_api_key = os.getenv("GOOGLE_API_KEY")
+google_search_id = os.getenv("GOOGLE_SEARCH_ID")
 
 def read_barcode():
     """
@@ -208,7 +231,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print("Kein Produkt gefunden.")
                 product_info = generate_no_prouduct_found_response(kidname)
             text_to_speak = product_info
-            tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+            play_audio_stream(text_to_speak, output_mp3)  # Stream and play the audio content
             convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
             waitingMusic.terminate()  # stop waiting music
         else:

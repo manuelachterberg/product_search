@@ -3,6 +3,7 @@ import json
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from pydub import AudioSegment
 
 class ElevenLabsTTS:
     def __init__(self, secrets_file=".secrets", usage_file="tts_usage.json"):
@@ -18,12 +19,12 @@ class ElevenLabsTTS:
         if not self.api_key:
             raise ValueError("ELEVENLABS_API_KEY not found in environment variables.")
 
-    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
+    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=10):
         # Ensure the output directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         # Define ElevenLabs API endpoint
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
 
         # Define headers and payload
         headers = {
@@ -40,13 +41,27 @@ class ElevenLabsTTS:
             }
         }
 
-        # Make the API request
-        response = requests.post(url, headers=headers, json=payload)
+        # Make the API request with streaming enabled
+        response = requests.post(url, headers=headers, json=payload, stream=True)
         if response.status_code == 200:
-            # Save the audio content to a file
-            with open(output_file, "wb") as out:
-                out.write(response.content)
-                print(f"Audio content saved to '{output_file}'")
+            # Save the streamed audio content to a temporary file
+            temp_output_file = output_file + ".temp"
+            with open(temp_output_file, "wb") as out:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        out.write(chunk)
+                print(f"Audio content saved to '{temp_output_file}'")
+
+            # Load the audio file with pydub
+            audio = AudioSegment.from_file(temp_output_file)
+
+            # Increase the volume
+            louder_audio = audio + volume_increase_db
+
+            # Export the louder audio to the final output file
+            louder_audio.export(output_file, format="mp3")
+            os.remove(temp_output_file)
+            print(f"Louder audio content saved to '{output_file}'")
         else:
             raise RuntimeError(f"Error {response.status_code}: {response.text}")
 
