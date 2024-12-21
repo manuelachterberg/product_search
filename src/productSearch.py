@@ -75,13 +75,10 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
 
     if audio_stream:
         with open(output_file, "wb") as file:
-            for chunk in audio_stream:
-                if isinstance(chunk, bytes):
-                    file.write(chunk)  # Save the audio chunk to the file
-                    stream(chunk)      # Play the audio chunk in real-time
-                else:
-                    print(f"Unexpected chunk type: {type(chunk)}")
-        print(f"Audio stream finished and saved to {output_file}.")
+            stream(audio_stream)      # Play the audio stream
+            audio_stream.seek(0)  # Ensure stream is rewound to the start for saving
+            file.write(audio_stream.read())  # Save the full audio content to the file
+            print(f"Audio stream finished and saved to {output_file}.")
     else:
         print("Error: Audio stream is None.")
 
@@ -260,7 +257,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
 
 def main():
     print("Green ON")
-    led.set_color(1, 0, 0)  # Red
+    led.set_color(1, 1, 0)  # Violet
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
     output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
