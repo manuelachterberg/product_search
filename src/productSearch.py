@@ -246,14 +246,15 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print(f"Gefundenes Produkt: {title}\nLink: {link}")
                 product_info = generate_creative_description(title, link, kidname)  # create a nice description using OpenAI API
                 print("\n" + product_info + "\n")
+                text_to_speak = product_info
+                play_audio_stream(text_to_speak, waiting_music_process, output_file=output_mp3)  # Stream and play the audio content
+                #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+                convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
             else:
                 led.set_color(1, 0, 0)  # Red
                 print("Kein Produkt gefunden.")
-                product_info = generate_no_prouduct_found_response(kidname)
-            text_to_speak = product_info
-            play_audio_stream(text_to_speak, waiting_music_process, output_file=output_mp3)  # Stream and play the audio content
-            #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-            convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+                #product_info = generate_no_prouduct_found_response(kidname) # Deprecated. For generating a new product not found message
+                play_with_aplay(os.path.join(script_dir, f"outputs/notfound.wav"))
         else:
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
