@@ -239,9 +239,9 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print("Kein Produkt gefunden.")
                 product_info = generate_no_prouduct_found_response(kidname)
             text_to_speak = product_info
-            play_audio_stream(text_to_speak, waiting_music_process, output_wav)  # Stream and play the audio content
+            play_audio_stream(text_to_speak, waiting_music_process, output_file=output_mp3)  # Stream and play the audio content
             #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-            #convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+            convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
         else:
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
