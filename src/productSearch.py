@@ -54,8 +54,10 @@ def load_prompt_templates(language="en"):
     return role_template, prompt_template
 
 def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
-    # Terminate the waiting music process before starting the stream
+    # Terminate the waiting music process after a delay before starting the stream
     if waiting_music_process and waiting_music_process.poll() is None:
+        print(f"Waiting for 5 seconds before terminating waiting music process with PID {waiting_music_process.pid}")
+        time.sleep(5)  # Wait for 5 seconds
         print(f"Terminating waiting music process with PID {waiting_music_process.pid}")
         waiting_music_process.terminate()
         waiting_music_process.wait()  # Ensure the process is cleaned up
@@ -226,10 +228,10 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
         else:
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
+            answer = play_with_aplay(output_wav)  # play the response text
         waiting_music_process.wait()  # wait until process stopped
         if 'answer' in locals() and answer.poll() is None:
             answer.terminate()  # Ensure previous playback is stopped
-        answer = play_with_aplay(output_wav)  # play the response text
         # Poll until the process finishes
         while answer.poll() is None:
             print("Playback in progress...")
