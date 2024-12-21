@@ -19,10 +19,7 @@ class ElevenLabsTTS:
         if not self.api_key:
             raise ValueError("ELEVENLABS_API_KEY not found in environment variables.")
 
-    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=4):
-        # Ensure the output directory exists
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-
+    def synthesize_speech_stream(self, text, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
         # Define ElevenLabs API endpoint
         url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
 
@@ -44,26 +41,33 @@ class ElevenLabsTTS:
         # Make the API request with streaming enabled
         response = requests.post(url, headers=headers, json=payload, stream=True)
         if response.status_code == 200:
-            # Save the streamed audio content to a temporary file
-            temp_output_file = output_file + ".temp"
-            with open(temp_output_file, "wb") as out:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        out.write(chunk)
-                print(f"Audio content saved to '{temp_output_file}'")
-
-            # Load the audio file with pydub
-            audio = AudioSegment.from_file(temp_output_file)
-
-            # Increase the volume
-            louder_audio = audio + volume_increase_db
-
-            # Export the louder audio to the final output file
-            louder_audio.export(output_file, format="mp3")
-            os.remove(temp_output_file)
-            print(f"Louder audio content saved to '{output_file}'")
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
         else:
             raise RuntimeError(f"Error {response.status_code}: {response.text}")
+
+    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=10):
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        # Stream the audio content and save to a temporary file
+        temp_output_file = output_file + ".temp"
+        with open(temp_output_file, "wb") as out:
+            for chunk in self.synthesize_speech_stream(text, voice_id, model_id):
+                out.write(chunk)
+            print(f"Audio content saved to '{temp_output_file}'")
+
+        # Load the audio file with pydub
+        audio = AudioSegment.from_file(temp_output_file)
+
+        # Increase the volume
+        louder_audio = audio + volume_increase_db
+
+        # Export the louder audio to the final output file
+        louder_audio.export(output_file, format="mp3")
+        os.remove(temp_output_file)
+        print(f"Louder audio content saved to '{output_file}'")
 
         # Return the character count of the input text
         return len(text)
@@ -101,18 +105,17 @@ class ElevenLabsTTS:
             model_id=model_id
         )
 
-        # Update usage tracking
-        if "total_characters" not in usage_data:
-            usage_data["total_characters"] = 0  # Initialize if not present
-
+        # Update usage data
         usage_data["total_characters"] += char_count
         usage_data["last_updated"] = datetime.now().isoformat()
 
-        # Save the updated usage data
+        # Save updated usage data
         self.save_usage_data(usage_data)
 
-        # Print the updated character count
-        print(f"Updated total character count: {usage_data['total_characters']}")
+        # Debugging: Print the updated usage data
+        print(f"Updated usage data: {usage_data}")
+
+        return char_count
 
 if __name__ == "__main__":
     tts = ElevenLabsTTS()
