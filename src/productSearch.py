@@ -64,8 +64,10 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
         print("Waiting music process terminated.")
 
     # Stream the audio content and play it in real-time
+    print("Starting audio stream...")
     audio_stream = tts.synthesize_speech_stream(text, voice_id, model_id)
     stream(audio_stream)
+    print("Audio stream finished.")
 
 # Load environment variables
 load_env(".secrets") # Load secrets
