@@ -4,21 +4,25 @@ import os
 import yaml
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
-from tts import GoogleTTS
+from tts_elevenlabs import ElevenLabsTTS
 import subprocess
 from evdev import InputDevice, categorize, ecodes
 import re
 from rgb_led import RGBLEDController
+import time
 
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
 kidname = ""
+kidname_short = ""
 output_mp3 = "outputs/product_description.mp3"
 output_wav = "outputs/product_description.wav"
 script_dir = os.path.dirname(os.path.abspath(__file__))
-tts = GoogleTTS()
+tts = ElevenLabsTTS()
 led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
+current_process = None
+
 
 
 def load_yaml(file_name):
@@ -51,8 +55,9 @@ def load_prompt_templates(language="en"):
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
 kidname = (os.getenv("kidname"))
+kidname_short = (os.getenv("kidname_short"))
 language = (os.getenv("language"))
-voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
+#voice_model = f"{language}-Wavenet-C" # set Google TTS Voice Model
 role, prompt_template = load_prompt_templates(language)
 scanner_device = (os.getenv("scannerdevice"))
 waiting_music = script_dir + f"/assets/waitingMusic.wav"
@@ -165,62 +170,86 @@ def convert_mp3_to_wav(mp3_file, wav_file):
     subprocess.run(["ffmpeg", "-y", "-i", mp3_file, wav_file], check=True)
 
 def play_with_aplay(file_path):
+    global current_process  # Use a global variable to track the running process
     try:
-        # Start aplay in the background
-        process = subprocess.Popen(["aplay", file_path])
-        return process  # Return the process handle so it can be terminated later
+        # If a process is already running, terminate it
+        if current_process and current_process.poll() is None:  # Check if the process is still running
+            print(f"Terminating previous 'aplay' process with PID {current_process.pid}")
+            current_process.terminate()
+            current_process.wait()  # Ensure the process is cleaned up
+            print("Previous 'aplay' process terminated.")
+
+        # Start a new process
+        current_process = subprocess.Popen(["aplay", file_path])
+        print(f"Started new 'aplay' process with PID {current_process.pid}")
+        return current_process  # Return the process handle so it can be managed later
     except FileNotFoundError:
         print("Error: 'aplay' is not installed or not found in PATH.")
         return None
 
+def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
+    led.set_color(1, 1, 0)  # Orange
+    gtin = gtin.strip()
+    print(f"Scanned GTIN: {gtin}")
+    if gtin:
+        output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
+        output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
+        if not os.path.exists(output_wav):
+            print(f"File {gtin}_{language}.wav not found in output folder")
+            title, link = search_gtin_with_google(gtin)  # Search GTIN with google search API
+            waitingMusic = play_with_aplay(waiting_music)  # Play waiting music
+            if title and link:  # if product is found
+                led.set_color(0, 1, 0)  # Green
+                print(f"Gefundenes Produkt: {title}\nLink: {link}")
+                product_info = generate_creative_description(title, link, kidname)  # create a nice description using OpenAI API
+                print("\n" + product_info + "\n")
+            else:
+                led.set_color(1, 0, 0)  # Red
+                print("Kein Produkt gefunden.")
+                product_info = generate_no_prouduct_found_response(kidname)
+            text_to_speak = product_info
+            tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+            convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+            waitingMusic.terminate()  # stop waiting music
+        else:
+            led.set_color(0, 1, 0)  # Green
+            print(f"File {gtin}_{language}.wav found in output folder")
+        waitingMusic.wait()  # wait until process stopped
+        if 'answer' in locals() and answer.poll() is None:
+            answer.terminate()  # Ensure previous playback is stopped
+        answer = play_with_aplay(output_wav)  # play the response text
+        # Poll until the process finishes
+        while answer.poll() is None:
+            print("Playback in progress...")
+            time.sleep(5)
+
+        # Playback finished
+        print("Playback finished.")
+        return True  # Indicate that the GTIN was handled
+    return False  # Indicate that the GTIN was not handled
+
 def main():
     print("Green ON")
     led.set_color(1, 0, 0)  # Red
-     # Initialize the TTS class
     print("Product Lookup via GTIN")
     text_to_speak = generate_greeting(kidname=kidname)
-    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname}.mp3")
-    output_wav = os.path.join(script_dir, "outputs/greeting_{kidname}.wav")
-    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
-    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
-    play_with_aplay(output_wav) # play the response text
+    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
+    output_wav = os.path.join(script_dir, "outputs/greeting_{kidname_short}.wav")
+    tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+    convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+    play_with_aplay(output_wav)  # play the response text
 
-
-    while True: # always loop the product search
+    while True:  # always loop the product search
         led.set_color(0, 0, 1)  # Blue
         print("Waiting for scanner input...")
         # Start barcode scanning
         barcode_generator = read_barcode()
-        #gtin = input("Enter GTIN (or 'exit' to quit): ").strip() # Promt User for entering a GTIN
         for gtin in barcode_generator:
-            led.set_color(1, 1, 0)  # Orange
-            gtin = gtin.strip()
-            print(f"Scanned GTIN: {gtin}")
-            if gtin:
-                output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
-                output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
-                if not os.path.exists(output_wav):
-                    print(f"File {gtin}_{language}.wav not found in output folder")
-                    title, link = search_gtin_with_google(gtin) # Search GTIN with google search API
-                    waitingMusic = play_with_aplay(waiting_music) # Play waiting music
-                    if title and link: # if product is found
-                        led.set_color(0, 1, 0)  # Green
-                        print(f"Gefundenes Produkt: {title}\nLink: {link}")
-                        product_info = generate_creative_description(title, link, kidname) # create a nice description using OpenAI API
-                        print("\n" + product_info + "\n")
-                    else:
-                        led.set_color(1, 0, 0)  # Red
-                        print("Kein Produkt gefunden.")
-                        product_info = generate_no_prouduct_found_response(kidname)
-                    text_to_speak = product_info
-                    tts.track_usage(text=text_to_speak, output_file=output_mp3, tone="excited", voice_name=voice_model)  # TTS the text and track character usage for the api
-                    convert_mp3_to_wav(output_mp3, output_wav) # convert mp3 to wav
-                    waitingMusic.terminate() # stop waiting music
-                    waitingMusic.wait() # wait until process stopped
-                else:
-                    print(f"File {gtin}_{language}.wav found in output folder")
-                play_with_aplay(output_wav) # play the response text
-        
+            if handle_gtin(gtin, script_dir, language, kidname, waiting_music):
+                break  # Move break the for loop iterating through gtins
+            print("Continuing the scanning process...")
+        print("Starting from the beginning")
+
 if __name__ == "__main__":
     main()
 

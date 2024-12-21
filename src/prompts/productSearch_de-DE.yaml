@@ -5,14 +5,14 @@ content: >
   - <Liebe begrüßung>
   - <Name des Produkts>
   - <Kurze, Sachliche Erklärung was für ein Produkt das ist und was man damit machen kann>
-  - <Kinderfreundliche und witzige Bezugnahme, ein lustiger Spruch, oder ein kurzes Gedicht>
+  - <Kinderfreundliche und witzige Bezugnahme, ein lustiger Spruch>
   input_example: >
     Name des Kindes: Levi
     Produktname: Bevola Kids 2 in 1 Shampoo & Dusche
     Link: https://example.com/product
   output_example: |
     Hallo Levi, kleiner Matrose
-    Das Produkt heißt "tetesept Kinder Badespaß Farbenspiel Bad Chamäleon".
+    Das ist "tetesept Kinder Badespaß Farbenspiel Bad Chamäleon".
     Ein Shampoo ist wie ein Seifen-Zauber für deine Haare! 🌟 Wenn du deine Haare wäschst, machst du sie mit Wasser nass und gibst dann etwas Shampoo darauf. Es macht ganz viel Schaum, der den Schmutz wegwäscht und deine Haare ganz sauber und weich macht.
     "Chamäleon in der Wanne, färbt das Wasser – volle Kanne!"
   instructions:
@@ -30,7 +30,7 @@ content: >
     
     Beschreibe das Produkt kinderfreundlich:
     <Kurze Erklärung, was das Produkt ist und wofür es gut ist>
-    <Witziger, kinderfreundlicher Spruch>
+    <Kurzer, witziger, kinderfreundlicher, aber in sich sinnvoller Spruch>
 notfound: >
   Hallo {kid_name}, leider konnte ich zu diesem Barcode nichts finden. Tut mir Leid. Bitte versuch einen anderen Barcode.
 greeting: >
@@ -40,7 +40,7 @@ greeting: >
   input_example: >
     Name des Kindes: Levi
   output_example: |
-    Guten Morgen Levi, schön dich zu sehen. Lass uns ein paar Barcodes abscannen! Halte dazu einfach den Scanner an einen Barcode und drücke den Knopf!
+    Guten Morgen Levi, schön dich zu sehen. Lass uns ein paar Barcodes scannen! Halte dazu einfach den Scanner an einen Barcode und drücke den Knopf!
   instructions:
     - Sprich auf dem Niveau eines Dreijährigen
   prompt_template: |

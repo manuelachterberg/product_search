@@ -5,14 +5,14 @@ content: >
   - <Friendly greeting>
   - <Product name>
   - <Brief, factual explanation of what the product is and what it is used for>
-  - <Kid-friendly and funny reference, a humorous remark, or a short poem>
+  - <Kid-friendly and funny reference, a humorous remark>
   input_example: >
     Kid's Name: Levi
     Product Name: Bevola Kids 2 in 1 Shampoo & Shower Gel
     Link: https://example.com/product
   output_example: |
     Hello Levi, little sailor!
-    The product is called "tetesept Kids Bath Fun Color-Changing Bath Chameleon."
+    This is "tetesept Kids Bath Fun Color-Changing Bath Chameleon."
     A shampoo is like magic soap for your hair! 🌟 When you wash your hair, you make it wet with water, add some shampoo, and it creates lots of foam that washes away dirt and makes your hair clean and soft.
     "A chameleon in the tub, coloring the water – full blast!"
   instructions:
@@ -30,7 +30,7 @@ content: >
     
     Describe the product in a kid-friendly way:
     <Brief explanation of what the product is and why it's useful>
-    <Funny, kid-friendly remark>
+    <Funny, short, kid-friendly but sensible in itself remark>
 notfound: >
   Hello {kid_name}, unfortunately, I couldn't find anything for this barcode. I'm sorry. Please try another barcode.
 greeting: >
