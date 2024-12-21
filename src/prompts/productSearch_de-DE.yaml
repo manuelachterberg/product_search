@@ -42,8 +42,10 @@ greeting: >
   input_example: >
     Name des Kindes: Levi
   output_example: |
-    Guten Morgen Levi, schön dich zu sehen. Lass uns ein paar Barcodes scannen! Halte dazu einfach den Scanner an einen Barcode und drücke den Knopf!
+    Hallo mein kleiner Levispatz, es ist Schlafenszeit, aber wir können noch schnell ein paar Sachen scannen. Du musst nur den Scanner an den Barcode halten und den Knopf drücken. Aber danach geht's ab in's Bettchen, okay? Schlaf gut und träum was Schönes!
   instructions:
     - Sprich auf dem Niveau eines Dreijährigen
   prompt_template: |
     Name des Kindes: {kid_name}
+
+    
