@@ -19,7 +19,7 @@ class ElevenLabsTTS:
         if not self.api_key:
             raise ValueError("ELEVENLABS_API_KEY not found in environment variables.")
 
-    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=10):
+    def synthesize_speech(self, text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=4):
         # Ensure the output directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
