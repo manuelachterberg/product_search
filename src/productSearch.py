@@ -10,6 +10,7 @@ import re
 from rgb_led import RGBLEDController
 import time
 from pydub import AudioSegment
+from openai import OpenAI
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
