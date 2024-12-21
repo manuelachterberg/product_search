@@ -13,6 +13,7 @@ from pydub import AudioSegment
 from openai import OpenAI
 from io import BytesIO
 from elevenlabs import stream
+import threading
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
@@ -53,22 +54,31 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
-def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
-    # Terminate the waiting music process after a delay before starting the stream
-    if waiting_music_process and waiting_music_process.poll() is None:
-        print(f"Waiting for 5 seconds before terminating waiting music process with PID {waiting_music_process.pid}")
-        time.sleep(5)  # Wait for 5 seconds
-        print(f"Terminating waiting music process with PID {waiting_music_process.pid}")
-        waiting_music_process.terminate()
-        waiting_music_process.wait()  # Ensure the process is cleaned up
-        print("Waiting music process terminated.")
+def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", output_file="outputs/output.wav"):
+    def terminate_waiting_music():
+        """Terminate the waiting music process after 5 seconds."""
+        if waiting_music_process and waiting_music_process.poll() is None:
+            print(f"Waiting for 5 seconds before terminating waiting music process with PID {waiting_music_process.pid}")
+            time.sleep(5)  # Wait for 5 seconds
+            print(f"Terminating waiting music process with PID {waiting_music_process.pid}")
+            waiting_music_process.terminate()
+            waiting_music_process.wait()  # Ensure the process is cleaned up
+            print("Waiting music process terminated.")
 
-    # Stream the audio content and play it in real-time
+    # Start the waiting music termination in a separate thread
+    if waiting_music_process and waiting_music_process.poll() is None:
+        threading.Thread(target=terminate_waiting_music, daemon=True).start()
+
+    # Stream the audio content and save it in real-time
     print("Starting audio stream...")
     audio_stream = tts.synthesize_speech_stream(text, voice_id, model_id)
+
     if audio_stream:
-        stream(audio_stream)
-        print("Audio stream finished.")
+        with open(output_file, "wb") as file:
+            for chunk in audio_stream:
+                file.write(chunk)  # Save the audio chunk to the file
+                stream(chunk)      # Play the audio chunk in real-time
+        print(f"Audio stream finished and saved to {output_file}.")
     else:
         print("Error: Audio stream is None.")
 
@@ -229,16 +239,16 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print("Kein Produkt gefunden.")
                 product_info = generate_no_prouduct_found_response(kidname)
             text_to_speak = product_info
-            play_audio_stream(text_to_speak, waiting_music_process)  # Stream and play the audio content
-            tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-            convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+            play_audio_stream(text_to_speak, waiting_music_process, output_wav)  # Stream and play the audio content
+            #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+            #convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
         else:
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
             answer = play_with_aplay(output_wav)  # play the response text
         while answer and answer.poll() is None:
             print("Playback in progress...")
-            time.sleep(5)
+            time.sleep(1)
 
         # Playback finished
         print("Playback finished.")
