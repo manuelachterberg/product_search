@@ -9,7 +9,6 @@ from evdev import InputDevice, categorize, ecodes
 import re
 from rgb_led import RGBLEDController
 import time
-import simpleaudio as sa
 from pydub import AudioSegment
 
 # Aktuelle Zeit und Datum
@@ -57,11 +56,9 @@ def play_audio_stream(text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_
     with open(temp_output_file, "wb") as out:
         for chunk in tts.synthesize_speech_stream(text, voice_id, model_id):
             out.write(chunk)
-            # Play the chunk using simpleaudio
-            audio_segment = AudioSegment.from_file(temp_output_file, format="mp3")
-            louder_audio = audio_segment + volume_increase_db
-            play_obj = sa.play_buffer(louder_audio.raw_data, num_channels=louder_audio.channels, bytes_per_sample=louder_audio.sample_width, sample_rate=louder_audio.frame_rate)
-            play_obj.wait_done()
+            # Play the chunk using aplay
+            with open(temp_output_file, "rb") as audio_file:
+                subprocess.run(["aplay"], stdin=audio_file)
         print(f"Audio content saved to '{temp_output_file}'")
 
     # Load the audio file with pydub
