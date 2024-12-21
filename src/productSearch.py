@@ -275,9 +275,9 @@ def main():
     text_to_speak = generate_greeting(kidname=kidname)
     output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
     output_wav = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.wav")
-    #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-    #convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
-    #play_with_aplay(output_wav)  # play the response text
+    tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+    convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+    play_with_aplay(output_wav)  # play the response text
 
     while True:  # always loop the product search
         led.set_color(0, 0, 1)  # Blue
