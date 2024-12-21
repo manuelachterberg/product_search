@@ -52,26 +52,6 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
-def play_audio_stream(text, output_file, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", volume_increase_db=10):
-    # Stream the audio content and accumulate it in memory
-    audio_data = BytesIO()
-    for chunk in tts.synthesize_speech_stream(text, voice_id, model_id):
-        audio_data.write(chunk)
-    audio_data.seek(0)
-
-    # Load the audio data with pydub
-    audio = AudioSegment.from_file(audio_data, format="mp3")
-
-    # Increase the volume
-    louder_audio = audio + volume_increase_db
-
-    # Export the louder audio to the final output file
-    louder_audio.export(output_file, format="mp3")
-    print(f"Louder audio content saved to '{output_file}'")
-
-    # Play the final output file using aplay
-    subprocess.run(["aplay", output_file])
-
 # Load environment variables
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
@@ -228,7 +208,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print("Kein Produkt gefunden.")
                 product_info = generate_no_prouduct_found_response(kidname)
             text_to_speak = product_info
-            play_audio_stream(text_to_speak, output_mp3)  # Stream and play the audio content
+            tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
             convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
             waitingMusic.terminate()  # stop waiting music
         else:
