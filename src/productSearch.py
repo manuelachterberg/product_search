@@ -205,6 +205,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
     led.set_color(1, 1, 0)  # Orange
     gtin = gtin.strip()
     print(f"Scanned GTIN: {gtin}")
+    waiting_music_process = None  # Initialize waiting_music_process to None
     if gtin:
         output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
         output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
@@ -229,7 +230,8 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
             answer = play_with_aplay(output_wav)  # play the response text
-        waiting_music_process.wait()  # wait until process stopped
+        if waiting_music_process:
+            waiting_music_process.wait()  # wait until process stopped
         if 'answer' in locals() and answer.poll() is None:
             answer.terminate()  # Ensure previous playback is stopped
         # Poll until the process finishes
