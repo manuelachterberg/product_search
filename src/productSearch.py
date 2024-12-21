@@ -54,7 +54,7 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
-def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", output_file="outputs/output.wav"):
+def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", output_file="output_audio.mp3"):
     def terminate_waiting_music():
         """Terminate the waiting music process after 5 seconds."""
         if waiting_music_process and waiting_music_process.poll() is None:
@@ -76,8 +76,11 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
     if audio_stream:
         with open(output_file, "wb") as file:
             for chunk in audio_stream:
-                file.write(chunk)  # Save the audio chunk to the file
-                stream(chunk)      # Play the audio chunk in real-time
+                if isinstance(chunk, bytes):
+                    file.write(chunk)  # Save the audio chunk to the file
+                    stream(chunk)      # Play the audio chunk in real-time
+                else:
+                    print(f"Unexpected chunk type: {type(chunk)}")
         print(f"Audio stream finished and saved to {output_file}.")
     else:
         print("Error: Audio stream is None.")
