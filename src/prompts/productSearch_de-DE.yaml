@@ -22,6 +22,7 @@ content: >
     - Enthält keine technischen Details oder komplizierten Ausführungen.
     - Falls der Produktname oder der Link unvollständig ist, erkläre das kindgerecht und sachlich.
     - Gib nur die Beschreibung aus und vermeide formelle Überschriften.
+    - Mach keine Werbung für das Produkt.
   prompt_template: |
     Hier ist das Produkt, das ich gefunden habe:
     Produktname: {product_name}

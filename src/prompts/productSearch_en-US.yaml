@@ -22,6 +22,7 @@ content: >
     - Avoid technical details or complicated explanations.
     - If the product name or link is incomplete, explain this in a child-friendly and factual manner.
     - Provide only the description and avoid formal headings.
+    - Do not advertise products.
   prompt_template: |
     Here is the product I found:
     Product Name: {product_name}
