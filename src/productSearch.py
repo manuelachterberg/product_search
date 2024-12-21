@@ -53,7 +53,14 @@ def load_prompt_templates(language="en"):
     
     return role_template, prompt_template
 
-def play_audio_stream(text, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
+def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2"):
+    # Terminate the waiting music process before starting the stream
+    if waiting_music_process and waiting_music_process.poll() is None:
+        print(f"Terminating waiting music process with PID {waiting_music_process.pid}")
+        waiting_music_process.terminate()
+        waiting_music_process.wait()  # Ensure the process is cleaned up
+        print("Waiting music process terminated.")
+
     # Stream the audio content and play it in real-time
     audio_stream = tts.synthesize_speech_stream(text, voice_id, model_id)
     stream(audio_stream)
@@ -146,7 +153,6 @@ def generate_no_prouduct_found_response(kidname="Levi"):
     return text
 
 def search_gtin_with_google(gtin):
-    
     # Google API-Client erstellen
     service = build("customsearch", "v1", developerKey=google_api_key)
     
@@ -203,7 +209,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
         if not os.path.exists(output_wav):
             print(f"File {gtin}_{language}.wav not found in output folder")
             title, link = search_gtin_with_google(gtin)  # Search GTIN with google search API
-            waitingMusic = play_with_aplay(waiting_music)  # Play waiting music
+            waiting_music_process = play_with_aplay(waiting_music)  # Play waiting music
             if title and link:  # if product is found
                 led.set_color(0, 1, 0)  # Green
                 print(f"Gefundenes Produkt: {title}\nLink: {link}")
@@ -214,14 +220,13 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
                 print("Kein Produkt gefunden.")
                 product_info = generate_no_prouduct_found_response(kidname)
             text_to_speak = product_info
-            play_audio_stream(text_to_speak)  # Stream and play the audio content
+            play_audio_stream(text_to_speak, waiting_music_process)  # Stream and play the audio content
             tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
             convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
-            waitingMusic.terminate()  # stop waiting music
         else:
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
-        waitingMusic.wait()  # wait until process stopped
+        waiting_music_process.wait()  # wait until process stopped
         if 'answer' in locals() and answer.poll() is None:
             answer.terminate()  # Ensure previous playback is stopped
         answer = play_with_aplay(output_wav)  # play the response text

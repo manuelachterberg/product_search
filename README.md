@@ -49,6 +49,10 @@ Ensure the following tools are installed on your system:
   ```bash
   sudo apt install alsa-utils
   ```
+- **mpv** (for audio streaming from elevenlabs):
+  ```bash
+  sudo apt-get install mpv
+  ```
 
 ### **4. Set Up Environment Variables**
 Create a `.secrets` file and a `.env` file in the project directory with the following variables:
