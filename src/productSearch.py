@@ -66,8 +66,11 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
     # Stream the audio content and play it in real-time
     print("Starting audio stream...")
     audio_stream = tts.synthesize_speech_stream(text, voice_id, model_id)
-    stream(audio_stream)
-    print("Audio stream finished.")
+    if audio_stream:
+        stream(audio_stream)
+        print("Audio stream finished.")
+    else:
+        print("Error: Audio stream is None.")
 
 # Load environment variables
 load_env(".secrets") # Load secrets
@@ -208,6 +211,7 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
     gtin = gtin.strip()
     print(f"Scanned GTIN: {gtin}")
     waiting_music_process = None  # Initialize waiting_music_process to None
+    answer = None  # Initialize answer to None
     if gtin:
         output_mp3 = os.path.join(script_dir, f"outputs/{gtin}_{language}.mp3")
         output_wav = os.path.join(script_dir, f"outputs/{gtin}_{language}.wav")
@@ -232,9 +236,15 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
             led.set_color(0, 1, 0)  # Green
             print(f"File {gtin}_{language}.wav found in output folder")
             answer = play_with_aplay(output_wav)  # play the response text
-        while answer.poll() is None:
+        if waiting_music_process:
+            waiting_music_process.wait()  # wait until process stopped
+        if answer and answer.poll() is None:
+            answer.terminate()  # Ensure previous playback is stopped
+        # Poll until the process finishes
+        while answer and answer.poll() is None:
             print("Playback in progress...")
             time.sleep(5)
+
         # Playback finished
         print("Playback finished.")
         return True  # Indicate that the GTIN was handled
