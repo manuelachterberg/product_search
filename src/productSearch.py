@@ -14,6 +14,7 @@ from openai import OpenAI
 from io import BytesIO
 from elevenlabs import stream
 import threading
+from itertools import tee
 
 # Aktuelle Zeit und Datum
 now = datetime.now()
@@ -55,6 +56,7 @@ def load_prompt_templates(language="en"):
     return role_template, prompt_template
 
 def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3p", model_id="eleven_multilingual_v2", output_file="output_audio.mp3"):
+
     def terminate_waiting_music():
         """Terminate the waiting music process after 5 seconds."""
         if waiting_music_process and waiting_music_process.poll() is None:
@@ -69,16 +71,26 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
     if waiting_music_process and waiting_music_process.poll() is None:
         threading.Thread(target=terminate_waiting_music, daemon=True).start()
 
-    # Stream the audio content and save it in real-time
+    # Stream the audio content
     print("Starting audio stream...")
     audio_stream = tts.synthesize_speech_stream(text, voice_id, model_id)
 
     if audio_stream:
+        # Duplicate the generator to allow playback and saving simultaneously
+        audio_stream_for_playback, audio_stream_for_saving = tee(audio_stream)
+
+        # Save the streamed audio to a file
         with open(output_file, "wb") as file:
-            stream(audio_stream)      # Play the audio stream
-            audio_stream.seek(0)  # Ensure stream is rewound to the start for saving
-            file.write(audio_stream.read())  # Save the full audio content to the file
-            print(f"Audio stream finished and saved to {output_file}.")
+            for chunk in audio_stream_for_saving:
+                if isinstance(chunk, bytes):
+                    file.write(chunk)  # Save each chunk to the file
+                else:
+                    print(f"Unexpected chunk type: {type(chunk)}")
+
+        # Play the audio stream locally
+        stream(audio_stream_for_playback)
+
+        print(f"Audio stream finished and saved to {output_file}.")
     else:
         print("Error: Audio stream is None.")
 
@@ -262,9 +274,9 @@ def main():
     text_to_speak = generate_greeting(kidname=kidname)
     output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
     output_wav = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.wav")
-    tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-    convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
-    play_with_aplay(output_wav)  # play the response text
+    #tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+    #convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+    #play_with_aplay(output_wav)  # play the response text
 
     while True:  # always loop the product search
         led.set_color(0, 0, 1)  # Blue
