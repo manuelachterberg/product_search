@@ -67,6 +67,7 @@ pycups==2.0.1
 pydantic==2.10.4
 pydantic_core==2.27.2
 pydbus==0.6.0
+pydub==0.25.1
 Pygments==2.11.2
 PyGObject==3.42.1
 PyJWT==2.3.0
@@ -105,7 +106,7 @@ sniffio==1.3.1
 soupsieve==2.3.1
 streamdeck==0.9.5
 streamdeck-ui==2.0.15
-system76driver==20.4.102
+system76driver==20.4.107
 systemd-python==234
 tinycss2==1.4.0
 typing_extensions==4.12.2
