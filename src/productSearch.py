@@ -26,6 +26,8 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 tts = ElevenLabsTTS()
 led = RGBLEDController(red_pin=22, green_pin=23, blue_pin=8, active_high=True)  # Initialize the LED controller
 current_process = None
+time_of_day = "Morgen"
+
 
 def load_yaml(file_name):
     file_path = os.path.join(script_dir, file_name)
@@ -269,15 +271,18 @@ def handle_gtin(gtin, script_dir, language, kidname, waiting_music):
     return False  # Indicate that the GTIN was not handled
 
 def main():
-    print("Green ON")
+    print("Violet ON")
     led.set_color(1, 1, 0)  # Violet
+    time_of_day = get_day_period()
     print("Product Lookup via GTIN")
-    text_to_speak = generate_greeting(kidname=kidname)
-    output_mp3 = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.mp3")
-    output_wav = os.path.join(script_dir, f"outputs/greeting_{kidname_short}.wav")
-    tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
-    convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
-    play_with_aplay(output_wav)  # play the response text
+    output_mp3 = os.path.join(script_dir, f"outputs/{time_of_day}_{language}.mp3")
+    output_wav = os.path.join(script_dir, f"outputs/{time_of_day}_{language}.wav")
+    if not os.path.exists(output_wav): # if the greeting for that time of day is not already generated then generate it
+        text_to_speak = generate_greeting(kidname=kidname) # promt chatGPT to generate a greeting
+        tts.track_usage(text=text_to_speak, output_file=output_mp3)  # TTS the text and track character usage for the api
+        convert_mp3_to_wav(output_mp3, output_wav)  # convert mp3 to wav
+    
+    play_with_aplay(output_wav)
 
     while True:  # always loop the product search
         led.set_color(0, 0, 1)  # Blue
