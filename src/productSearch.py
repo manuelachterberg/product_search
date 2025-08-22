@@ -152,7 +152,7 @@ def generate_creative_description(product_name, product_link, kidname="Levi"):
         
     # ChatGPT Aufruf
     response = client.chat.completions.create(
-        model="gpt-4",  # Adjust model as necessary
+        model="gpt-4o-mini",  # Adjust model as necessary
         messages=[
             {"role": "system", "content": role["content"]},
             {"role": "user", "content": prompt}
@@ -176,7 +176,7 @@ def generate_greeting(kidname="Levi"):
         
     # ChatGPT Aufruf
     response = client.chat.completions.create(
-        model="gpt-4",  # Adjust model as necessary
+        model="gpt-4o-mini",  # Adjust model as necessary
         messages=[
             {"role": "system", "content": role["content"]},
             {"role": "user", "content": prompt}
