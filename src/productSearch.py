@@ -99,9 +99,9 @@ def play_audio_stream(text, waiting_music_process, voice_id="5Aahq892EEb6MdNwMM3
 # Load environment variables
 load_env(".secrets") # Load secrets
 load_env(".env") # Load env
-kidname = os.getenv("kidname")
+kidname = os.getenv("kidname") or "Levi"
 kidname_short = os.getenv("kidname_short")
-language = os.getenv("language")
+language = os.getenv("language") or "de-DE"
 role, prompt_template = load_prompt_templates(language)
 scanner_device = os.getenv("scannerdevice")
 waiting_music = script_dir + f"/assets/waitingMusic.wav"
@@ -137,9 +137,17 @@ def generate_creative_description(product_name, product_link, kidname="Levi"):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     day_period = get_day_period()
-    prompt = f"Es ist aktuell {day_period}, am , {current_date}.\n\n"
+    prompt = f"Es ist aktuell {day_period}, am {current_date}.\n\n"
     prompt_template_string = prompt_template["content"]
-    prompt += prompt_template_string.replace("{product_name}", product_name).replace("{product_link}", product_link).replace("{kid_name}", kidname)
+    safe_product_name = "" if product_name is None else str(product_name)
+    safe_product_link = "" if product_link is None else str(product_link)
+    safe_kidname = kidname if kidname else "Levi"
+    prompt += (
+        prompt_template_string
+        .replace("{product_name}", safe_product_name)
+        .replace("{product_link}", safe_product_link)
+        .replace("{kid_name}", safe_kidname)
+    )
     print(prompt)
         
     # ChatGPT Aufruf
@@ -160,9 +168,10 @@ def generate_greeting(kidname="Levi"):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     day_period = get_day_period()
-    prompt = f"Es ist aktuell {day_period}, am , {current_date}.\n\n"
+    prompt = f"Es ist aktuell {day_period}, am {current_date}.\n\n"
     prompt_template_string = prompt_template["greeting"]
-    prompt += prompt_template_string.replace("{kid_name}", kidname)
+    safe_kidname = kidname if kidname else "Levi"
+    prompt += prompt_template_string.replace("{kid_name}", safe_kidname)
     print(prompt)
         
     # ChatGPT Aufruf
@@ -297,4 +306,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
